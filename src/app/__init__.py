@@ -7,11 +7,11 @@ from random import shuffle
 from flask_cors import CORS
 
 sys.path.insert(0, os.path.abspath("./src/app"))
+app = Flask(__name__, template_folder="build", static_folder="build/static")
+cors = CORS(app, resources={r"/allresults": {"origins": "*"}, r"/getRecord": {"origins": "*"}, r"/download": {"origins": "*"}})
 
 from swab_n_seq_results import data
-
-app = Flask(__name__, template_folder="build", static_folder="build/static")
-cors = CORS(app, resources={r"/allresults": {"origins": "*"}, r"/getRecord": {"origins": "*"}})
+from download import data as download
 
 # Serve home path
 @app.route('/', defaults={'path': ''})
@@ -27,6 +27,27 @@ def serve_results():
         'results': list(results),
         'summary': data['summary']
     }
+
+def csv_list(list):
+    return str(list).lstrip('[').rstrip(']') + '\n'
+
+@app.route('/download')
+def get_download():
+    record_id = request.args.get('id')
+    download_headers = download['headers']
+    download_data = download['data']
+    download_summary = download['summary']
+
+    download_file = ''
+    download_file += csv_list(download_headers)
+    download_file += csv_list(download_summary)
+
+    if record_id and record_id.isdigit() and int(record_id) in download_data:
+        key = int(record_id)
+        download_file += csv_list( download_data[key])
+
+    return download_file.replace('\'', '')
+
 
 @app.route('/getRecord')
 def get_record():
