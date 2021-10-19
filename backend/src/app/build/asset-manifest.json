@@ -1,0 +1,25 @@
+{
+  "files": {
+    "main.css": "/static/css/main.05d0da9b.chunk.css",
+    "main.js": "/static/js/main.fc4ac6d1.chunk.js",
+    "main.js.map": "/static/js/main.fc4ac6d1.chunk.js.map",
+    "runtime-main.js": "/static/js/runtime-main.7ee40385.js",
+    "runtime-main.js.map": "/static/js/runtime-main.7ee40385.js.map",
+    "static/css/2.b0bb7f2c.chunk.css": "/static/css/2.b0bb7f2c.chunk.css",
+    "static/js/2.1eac34b1.chunk.js": "/static/js/2.1eac34b1.chunk.js",
+    "static/js/2.1eac34b1.chunk.js.map": "/static/js/2.1eac34b1.chunk.js.map",
+    "index.html": "/index.html",
+    "precache-manifest.dbaad365b743c3d0af25e844f597570c.js": "/precache-manifest.dbaad365b743c3d0af25e844f597570c.js",
+    "service-worker.js": "/service-worker.js",
+    "static/css/2.b0bb7f2c.chunk.css.map": "/static/css/2.b0bb7f2c.chunk.css.map",
+    "static/css/main.05d0da9b.chunk.css.map": "/static/css/main.05d0da9b.chunk.css.map",
+    "static/media/swab_n_seq_card.png": "/static/media/swab_n_seq_card.063e033b.png"
+  },
+  "entrypoints": [
+    "static/js/runtime-main.7ee40385.js",
+    "static/css/2.b0bb7f2c.chunk.css",
+    "static/js/2.1eac34b1.chunk.js",
+    "static/css/main.05d0da9b.chunk.css",
+    "static/js/main.fc4ac6d1.chunk.js"
+  ]
+}
