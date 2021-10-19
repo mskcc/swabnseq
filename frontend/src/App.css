@@ -1,0 +1,63 @@
+p, h1 {
+  font-family: Georgia;
+}
+.App-header {
+  background-color: #007cba;;
+  font-size: calc(10px + 2vmin);
+  color: white;
+}
+.body-container {
+  padding-top: 35px;
+  padding-left: 10%;
+  padding-right: 10%;
+}
+.header-tab {
+  margin-top: 10px;
+  margin-left: 10px;
+  margin-right: 10px;
+  width: 150px;
+  display: inline-block;
+}
+.hor-align {
+  left: 50%;
+  transform: translate(-50%,0%);
+}
+.inline {
+  display: inline;
+}
+.inline-block {
+  display: inline-block;
+}
+.padding-top-20 {
+  padding-top: 20px;
+}
+
+.margin-left-40 {
+  margin-left: 40px;
+}
+
+.text-align-center {
+  text-align: center;
+}
+.white {
+  color: white;
+}
+.logo-container {
+  top: 0px;
+  right: 0px;
+  position: absolute;
+}
+.logo-text {
+  font-size: 14px;
+  width: 65px;
+  text-align: center;
+}
+.logo {
+  vertical-align: top;
+  margin-left: 10px;
+  height: 60px;
+  display: inline-block;
+  border: 1px solid black;
+  margin-right: 5px;
+  margin-top: 2px;
+}
