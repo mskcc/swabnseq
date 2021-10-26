@@ -1,0 +1,4 @@
+flask==1.1.1
+uwsgi==2.0.18
+Flask-Cors==3.0.7
+requests==2.21.0
