@@ -7,9 +7,57 @@ Application to show sequencing results for IGO's open house
 cd frontend && npm install && npm run start
 ```
 ### Backend
-* NOTE: Make sure the `.env` file has been created, e.g. `$ cp .env.example .env`
 ```
 cd backend && make init && make run
+```
+
+## Loading Data
+Currently, no "DB" is used and instead two files are written `swab_n_seq_results.py` & `download.py`. Use this setup by formatting Qiime results like below,
+
+* [`swab_n_seq_results.py`](https://github.com/mskcc/swabnseq/blob/master/backend/src/app/swab_n_seq_results.py) - Contains visualized data in the following format,
+```
+data = {
+   "results":{
+      "user_id":[
+         {
+            "count":698.0,
+            "org":{                 # fullest taxonomic identification from Kingdom -> Species ("" if couldn't specify)
+               "":"",
+               "k":"Bacteria"
+            }
+         },
+         ...
+      ],
+      ...
+   },
+   "summary":{
+      "c":[                         # Taxonomic (e.g. "c" - Phylum, "f" - "Family")
+         {
+            "count":44.0,
+            "org":{
+               "c":"Elusimicrobia"
+            }
+         },
+      
+```
+
+* [`download.py`](https://github.com/mskcc/swabnseq/blob/master/backend/src/app/download.py) - Contains same information as `swab_n_seq_results.py`, but in downloadable csv form that comes in a dense-matrix format like below,
+```
+data = {
+   "headers":[
+      "index",
+      "k__Archaea;p__Crenarchaeota;c__Thaumarchaeota;o__Nitrososphaerales;f__Nitrososphaeraceae;g__Candidatus Nitrososphaera;s__SCA1145",
+      ...
+   "data":{
+      "user_id": [
+        user_id,
+        (int),
+        ...
+      ]
+  }
+}
+  * `headers` are the identified taxonomies in semicolon-separated groups
+  * `data` are the counts for a given user_id
 ```
 
 ## Deploy
