@@ -13,7 +13,8 @@ cd backend && make init && make run
 ```
 
 ## Loading Data
-Currently, no "DB" is used. Two files are written,
+Currently, no "DB" is used and instead two files are written `swab_n_seq_results.py` & `download.py`. Use this setup by formatting Qiime results like below,
+
 * [`swab_n_seq_results.py`](https://github.com/mskcc/swabnseq/blob/master/backend/src/app/swab_n_seq_results.py) - Contains visualized data in the following format,
 ```
 data = {
@@ -41,7 +42,7 @@ data = {
       
 ```
 
-* [`download.py`](https://github.com/mskcc/swabnseq/blob/master/backend/src/app/download.py) - Contains downloadable data, and comes in a dense-matrix format like below
+* [`download.py`](https://github.com/mskcc/swabnseq/blob/master/backend/src/app/download.py) - Contains same information as `swab_n_seq_results.py`, but in downloadable csv form that comes in a dense-matrix format like below,
 ```
 data = {
    "headers":[
