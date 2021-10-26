@@ -1,4 +1,5 @@
 const config = {
-    root: '/swabnseq'
+    root: '/swabnseq/',
+    service: '/swabnseq/'
 };
 export default config;

@@ -1,0 +1,5 @@
+**/*.pyc
+src/app/build
+backend/venv
+frontend/node_modules
+*.ini
