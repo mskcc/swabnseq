@@ -56,9 +56,9 @@ data = {
       ]
   }
 }
-  * `headers` are the identified taxonomies in semicolon-separated groups
-  * `data` are the counts for a given user_id
 ```
+* `headers` are the identified taxonomies in semicolon-separated groups
+* `data` are the counts for a given user_id
 
 ## Deploy
 ```
