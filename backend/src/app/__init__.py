@@ -18,6 +18,11 @@ from download import data as download
 def serve(path):
     return render_template('index.html')
 
+# Serve about path
+@app.route('/about', defaults={'path': ''})
+def serveAbout(path):
+    return serve('/about')
+
 @app.route('/allresults')
 def serve_results():
     # Present the results in a random orer
