@@ -28,8 +28,8 @@ function AllGraphs(props) {
         const sections = props.graphs.length/len;
         const selectors = [];
         for(let i = 0; i<sections; i++){
-            const first = i*len;
-            const last = (i+1)*len;
+            const first = 81+ i*len;
+            const last = 81+ ((i+1)*len);
             const f = () => {
                 setMin(first);
                 setMax(last);
@@ -110,13 +110,13 @@ function AllGraphs(props) {
 </div>
     <Row>
     {
-        props.graphs.slice(min,max).map((graph, idx)=>{
+        props.graphs.slice(81+min,81+max).map((graph, idx)=>{
             return <Col xs={12} md={6} xl={4}
-            key={`Graph-${idx}`}
+            key={`Graph-${81+idx}`}
             className={"pos-rel"}>
                 <PieChart {...props}
             sliceList={graph}
-            sampleId={`Graph-${min+idx}`}
+            sampleId={`Graph-${81+min+idx}`}
             width={340}
             height={550}
             showlegend={false}
