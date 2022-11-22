@@ -110,13 +110,13 @@ function AllGraphs(props) {
 </div>
     <Row>
     {
-        props.graphs.slice(81+min,81+max).map((graph, idx)=>{
+        props.graphs.slice(min-81,max-81).map((graph, idx)=>{
             return <Col xs={12} md={6} xl={4}
-            key={`Graph-${81+idx}`}
+            key={`Graph-${min+idx}`}
             className={"pos-rel"}>
                 <PieChart {...props}
             sliceList={graph}
-            sampleId={`Graph-${81+min+idx}`}
+            sampleId={`Graph-${min+idx}`}
             width={340}
             height={550}
             showlegend={false}
