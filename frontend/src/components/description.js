@@ -15,7 +15,7 @@ function Description(props) {
         <h2>Extraction/Sequencing</h2>
         <div className={'padding-top-20'}>
         <p>
-        DNA was extracted directly from swabs. Samples were extracted using the MightyPrep Reagent for DNA (TaKaRa). Each swab tip was added to 100 µl of extraction solution, heated for 10 min at 95 °C, and diluted with 100 µl of nuclease-free water. Finally, the V4 region of bacterial 16S rRNA gene was amplified and prepped for amplicon sequencing <a href={"https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4081285/#ref-16"} target="_blank" rel="noopener noreferrer">(Flores, Henley & Fierer, 2012)</a>
+        DNA was extracted directly from swabs. Samples were extracted using the Extract-N-Amp Plant PCR kit (Sigma Aldrich). Each swab tip was added to 100 µl of extraction solution, heated for 10 min at 95 °C, and 100 µl of dilution solution added. Finally, the V4 region of bacterial 16S rRNA gene was amplified and prepped for amplicon sequencing <a href={"https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4081285/#ref-16"} target="_blank" rel="noopener noreferrer">(Flores, Henley & Fierer, 2012)</a>
         </p>
         </div>
         <h2>Data</h2>

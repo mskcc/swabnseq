@@ -57,9 +57,7 @@ function AllGraphs(props) {
             level={level}
             showDownload={false}/>
         }
-        return <MyData {...props} level={level}
-            
-        />
+        return <MyData {...props} level={level}/>
     };
 
     const handleAlignment = (event, val) => {
