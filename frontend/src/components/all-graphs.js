@@ -12,29 +12,29 @@ import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup';
 import {taxonomic_mapping, MAIN_GRAPH_SUMMARY, MAIN_GRAPH_INDIVIDUAL} from '../resources/constants';
 import MyData from "./my-data";
 import DownloadFile from "./common/download";
-
+ 
 function AllGraphs(props) {
     const [level, setLevel] = useState('g');    // Level of classification to use - k, p, c, o , f, g, s
     const [mainGraph, setMainGraph] = useState(MAIN_GRAPH_INDIVIDUAL);  // SUMMARY/INDIVIDUAL
-    const [min, setMin] = useState(0);
+    const [min, setMin] = useState(1);
     const [max, setMax] = useState(9);
-
+ 
     const handleChange = event => {
         setLevel(event.target.value);
     };
-
+ 
     const getSelectors = () => {
         const len = 9;
         const sections = props.graphs.length/len;
         const selectors = [];
         for(let i = 0; i<sections; i++){
-            const first = 81+ i*len;
-            const last = 81+ ((i+1)*len);
+            const first = 1+(i*len);
+            const last = ((i+1)*len);
             const f = () => {
                 setMin(first);
                 setMax(last);
             };
-
+ 
             const selected = (first === min && last === max)? ' selected' : '';
             const selector = <div onClick={f}
             className={"hover graph-section-selector" + selected}
@@ -45,7 +45,7 @@ function AllGraphs(props) {
         }
         return selectors;
     };
-
+ 
     const getMainGraph = () => {
         if(mainGraph === MAIN_GRAPH_SUMMARY){
             return <PieChart {...props}
@@ -57,17 +57,15 @@ function AllGraphs(props) {
             level={level}
             showDownload={false}/>
         }
-        return <MyData {...props} level={level}
-            
-        />
+        return <MyData {...props} level={level}/>
     };
-
+ 
     const handleAlignment = (event, val) => {
         setMainGraph(val);
     };
-
+ 
     const graphTitle = mainGraph === MAIN_GRAPH_SUMMARY ? 'Summary Statistics' : 'My Data';
-
+ 
     return <div>
     <div className={"summary-statistics-container pos-rel"}>
         <Row>
@@ -112,7 +110,7 @@ function AllGraphs(props) {
 </div>
     <Row>
     {
-        props.graphs.slice(min-81,max-81).map((graph, idx)=>{
+        props.graphs.slice(min-1,max).map((graph, idx)=>{
             return <Col xs={12} md={6} xl={4}
             key={`Graph-${min+idx}`}
             className={"pos-rel"}>
@@ -130,5 +128,5 @@ function AllGraphs(props) {
     </Row>
     </div>
 };
-
+ 
 export default AllGraphs;
