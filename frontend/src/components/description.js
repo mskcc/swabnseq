@@ -7,7 +7,7 @@ function Description(props) {
         <h2>Overview</h2>
         <div className={'padding-top-20'}>
         <p>
-        This data was generated as part of IGO's 2024 Open House.
+        This data was generated as part of IGO's 2025 Open House.
         We asked visitors for their voluntary participation to "swab" their mobile phones to collect microorganisms associated with their personal device.
         They received an annonymized identification number they could use to obtain their sequencing results, which are available on the <a href={"https://igo.mskcc.org/swabnseq"} target="_blank" rel="noopener noreferrer">Data</a> page.
         </p>
