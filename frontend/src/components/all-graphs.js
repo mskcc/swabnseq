@@ -14,7 +14,7 @@ import MyData from "./my-data";
 import DownloadFile from "./common/download";
  
 function AllGraphs(props) {
-    const [level, setLevel] = useState('g');    // Level of classification to use - k, p, c, o , f, g, s
+    const [level, setLevel] = useState('s');    // Level of classification to use - k, p, c, o , f, g, s
     const [mainGraph, setMainGraph] = useState(MAIN_GRAPH_INDIVIDUAL);  // SUMMARY/INDIVIDUAL
     const [min, setMin] = useState(1);
     const [max, setMax] = useState(9);
