@@ -18,7 +18,7 @@ function MyData(props) {
             return 'Please enter a value'
         }
         if(isNaN(val)){
-            return 'Please enter the numerical ID. For instance, enter "54" for "IGO24-054"'
+            return 'Please enter the numerical ID. For instance, enter "54" for "IGO25-054"'
         }
     };
 
@@ -58,7 +58,7 @@ function MyData(props) {
     return <div>
     <p>
     To access your data, enter the numerical ID found on your swabNseq card.
-        For instance, enter "54" for "IGO24-054"</p>
+        For instance, enter "54" for "IGO25-054"</p>
                                      <div className={'sid-card pos-rel'}>
         <form onSubmit={handleSubmit}
     className={'id-entry pos-abs'}>
