@@ -105,7 +105,7 @@ function AllGraphs(props) {
     </div>
     <div>
     <h1 className={'text-align-center'}>Individual Graphs</h1>
-    <p>Below are the annonymized graphs for all sequencing runs of the graph data. They are presented in a random order.</p>
+    <p>Below are the anonymized graphs for all sequencing runs of the graph data</p>
     {getSelectors()}
 </div>
     <Row>
