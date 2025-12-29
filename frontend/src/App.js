@@ -3,22 +3,27 @@ import { BrowserRouter as Router, Link, Route, Switch } from "react-router-dom";
 import './App.css';
 import AllGraphs from './components/all-graphs.js';
 import Description from './components/description.js';
+import PhotoGallery from './components/photo-gallery.js';
 import { getAllResults } from "./services/resultsService";
 import config from './config.js';
 
 function App() {
-    const [summary, setSummary] = useState([]);
+    const [summary, setSummary] = useState({});
     const [results, setResults] = useState([]);
 
     useEffect( () => {
         getAllResults()
             .then((resp) => {
-                const s = resp.summary || {};
-                const r = resp.results;
-                if(s) setSummary(s);
-                if(r) setResults(r);
+                if(resp && resp.summary) {
+                    const s = resp.summary || {};
+                    const r = resp.graphs || [];
+                    if(s) setSummary(s);
+                    if(r) setResults(r);
+                }
             })
-            .catch(console.log);
+            .catch((error) => {
+                console.error('Error fetching data:', error);
+            });
     }, []);
 
     return (
@@ -31,6 +36,9 @@ function App() {
         </Link>
         <Link className={"header-tab"} to={`${config.root}about`}>
 <h1 className={'white'}>About</h1>
+        </Link>
+        <Link className={"header-tab"} to={`${config.root}gallery`}>
+<h1 className={'white'}>Gallery</h1>
         </Link>
         <div className={'logo-container'}>
         <p className={'logo-text inline-block'}>Integrated Genomics Operation</p>
@@ -51,9 +59,14 @@ function App() {
     summaryGraph={summary}/>
 }
     />
-    <Route path={`${config.root}about`}
+        <Route path={`${config.root}about`}
     render={(props) =>
 <Description/>
+}
+    />
+        <Route path={`${config.root}gallery`}
+    render={(props) =>
+<PhotoGallery/>
 }
     />
     </Switch>

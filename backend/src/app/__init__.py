@@ -3,20 +3,39 @@ import json
 import sys, os
 import re
 import requests
+import importlib.util
 from random import shuffle
 from flask_cors import CORS
 
 sys.path.insert(0, os.path.abspath("./src/app"))
 app = Flask(__name__, template_folder="build", static_folder="build/static")
-cors = CORS(app, resources={r"/allresults": {"origins": "*"}, r"/getRecord": {"origins": "*"}, r"/download": {"origins": "*"}})
+cors = CORS(app, resources={
+    r"/allresults": {"origins": "*"}, 
+    r"/getRecord": {"origins": "*"}, 
+    r"/download": {"origins": "*"},
+    r"/gallery/*": {"origins": "*"}
+})
 
+# Import data files
 from swab_n_seq_results import data
 from download import data as download
 
 # Serve home path
 @app.route('/', defaults={'path': ''})
 def serve(path):
-    return render_template('index.html')
+    try:
+        return render_template('index.html')
+    except Exception:
+        return {
+            'message': 'Swab \'n Seq API is running',
+            'status': 'ok',
+            'endpoints': {
+                'allresults': '/allresults',
+                'getRecord': '/getRecord?id=<record_id>',
+                'download': '/download?id=<record_id>'
+            },
+            'frontend': 'In development mode, access the frontend at http://localhost:3000'
+        }, 200, {'Content-Type': 'application/json'}
 
 # Serve about path
 @app.route('/about', defaults={'path': ''})
@@ -25,11 +44,10 @@ def serveAbout(path):
 
 @app.route('/allresults')
 def serve_results():
-    # Present the results in a random orer
     results = list(data['results'].values())
     shuffle(results)
-    return { 
-        'results': list(results),
+    return {
+        'graphs': list(results),
         'summary': data['summary']
     }
 
@@ -58,17 +76,38 @@ def get_download():
 def get_record():
     record_id = request.args.get('id')
     results = data['results']
-
     if record_id not in results:
         return { 'error': 'Could not find record with id: %s' % record_id }
-
     f = open("./access_record.txt", "a")
     f.write("%s\n" % record_id)
     f.close()
-
     return {
         'record': results[record_id]
     }
+
+@app.route('/gallery/<path:filename>')
+def serve_gallery(filename):
+    try:
+        # Try build/gallery first (production), then public/gallery (dev)
+        gallery_path = os.path.join(app.root_path, 'build', 'gallery', filename)
+        if not os.path.exists(gallery_path):
+            # Fallback to public/gallery for dev mode
+            public_gallery = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(app.root_path))), 'frontend', 'public', 'gallery', filename)
+            if os.path.exists(public_gallery):
+                gallery_path = public_gallery
+            else:
+                return {'error': f'File not found: {filename}'}, 404
+        
+        gallery_path = os.path.normpath(gallery_path)
+        gallery_dir = os.path.normpath(os.path.join(app.root_path, 'build', 'gallery'))
+        public_gallery_dir = os.path.normpath(os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(app.root_path))), 'frontend', 'public', 'gallery'))
+        
+        if not (gallery_path.startswith(gallery_dir) or gallery_path.startswith(public_gallery_dir)):
+            return {'error': 'Invalid path'}, 403
+        
+        return send_file(gallery_path)
+    except Exception as e:
+        return {'error': str(e)}, 500
 
 # All paths not resolved above should serve front-end resources
 @app.route('/<path:path>')
