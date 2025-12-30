@@ -350,7 +350,7 @@ function PhotoGallery(props) {
             <h1 className={'text-align-center'}>Photo Gallery</h1>
             <div className={'padding-top-20'}>
                 <p style={{ textAlign: 'center', marginBottom: '30px' }}>
-                    Explore photos and videos from the IGO Swab 'n Seq 2025 Open House event
+                    Explore photos and videos from the IGO 2025 Open House event
                 </p>
             </div>
 

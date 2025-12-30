@@ -38,7 +38,7 @@ function App() {
 <h1 className={'white'}>About</h1>
         </Link>
         <Link className={"header-tab"} to={`${config.root}gallery`}>
-<h1 className={'white'}>Gallery</h1>
+<h1 className={'white'}>Photo Gallery</h1>
         </Link>
         <div className={'logo-container'}>
         <p className={'logo-text inline-block'}>Integrated Genomics Operation</p>
