@@ -214,7 +214,7 @@ function PhotoGallery(props) {
             
             return {
                 id: index + 1,
-                url: `/gallery/${photo.filename}`,
+                url: `/swabnseq/gallery/${photo.filename}`,
                 isVideo: isVideo
             };
         });

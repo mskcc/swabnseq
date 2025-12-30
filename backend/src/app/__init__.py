@@ -88,26 +88,30 @@ def get_record():
 @app.route('/gallery/<path:filename>')
 def serve_gallery(filename):
     try:
-        # Try build/gallery first (production), then public/gallery (dev)
-        gallery_path = os.path.join(app.root_path, 'build', 'gallery', filename)
-        if not os.path.exists(gallery_path):
-            # Fallback to public/gallery for dev mode
-            public_gallery = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(app.root_path))), 'frontend', 'public', 'gallery', filename)
-            if os.path.exists(public_gallery):
-                gallery_path = public_gallery
-            else:
-                return {'error': f'File not found: {filename}'}, 404
+        # Production: serve from external directory
+        gallery_base = '/srv/www/swabNseq/gallery'
         
-        gallery_path = os.path.normpath(gallery_path)
-        gallery_dir = os.path.normpath(os.path.join(app.root_path, 'build', 'gallery'))
-        public_gallery_dir = os.path.normpath(os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(app.root_path))), 'frontend', 'public', 'gallery'))
+        # Development: fallback to frontend/public/gallery
+        if not os.path.exists(gallery_base):
+            gallery_base = os.path.join(
+                os.path.dirname(os.path.dirname(os.path.dirname(app.root_path))), 
+                'frontend', 'public', 'gallery'
+            )
         
-        if not (gallery_path.startswith(gallery_dir) or gallery_path.startswith(public_gallery_dir)):
+        full_path = os.path.normpath(os.path.join(gallery_base, filename))
+        
+        # Security check: prevent path traversal
+        if not full_path.startswith(os.path.normpath(gallery_base)):
             return {'error': 'Invalid path'}, 403
         
-        return send_file(gallery_path)
+        if not os.path.exists(full_path):
+            return {'error': f'File not found: {filename}'}, 404
+            
+        return send_file(full_path)
     except Exception as e:
         return {'error': str(e)}, 500
+
+
 
 # All paths not resolved above should serve front-end resources
 @app.route('/<path:path>')
