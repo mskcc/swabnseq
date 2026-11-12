@@ -27,11 +27,20 @@ footer {
   min-height: 88vh;
 }
 .header-tab {
-  margin-top: 10px;
-  margin-left: 10px;
-  margin-right: 10px;
-  width: 100px;
+  margin: 0 14px;
+  width: auto;
   display: inline-block;
+  vertical-align: middle;
+}
+.App-header .header-tab h1 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 75px;
+  white-space: nowrap;
+}
+.App-header .header-tab:hover h1 {
+  text-decoration: underline;
 }
 .center {
   left: 50%;
