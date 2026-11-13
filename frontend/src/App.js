@@ -5,8 +5,13 @@ import AllGraphs from './components/all-graphs.js';
 import Description from './components/description.js';
 import PhotoGallery from './components/photo-gallery.js';
 import Landing from './components/landing.js';
+import ComingSoon from './components/coming-soon.js';
 import { getAllResults } from "./services/resultsService";
 import config from './config.js';
+
+// Flip to true to re-enable the Swab 'n Seq Results section (Data / About).
+// While false, Results shows a "Coming Soon" placeholder and the sub-tabs are hidden.
+const RESULTS_READY = false;
 
 function App() {
     const [summary, setSummary] = useState({});
@@ -51,13 +56,15 @@ function App() {
             </div>
         </header>
 
-        {/* Sub-tabs (Data / About) appear only inside Swab 'n Seq Results. */}
-        <Route path={[`${config.root}results`, `${config.root}about`]}>
-            <div className="oh-subnav">
-                <NavLink exact className="oh-subtab" activeClassName="active" to={`${config.root}results`}>Data</NavLink>
-                <NavLink className="oh-subtab" activeClassName="active" to={`${config.root}about`}>About</NavLink>
-            </div>
-        </Route>
+        {/* Sub-tabs (Data / About) appear only inside Swab 'n Seq Results, and only once it is live. */}
+        {RESULTS_READY && (
+            <Route path={[`${config.root}results`, `${config.root}about`]}>
+                <div className="oh-subnav">
+                    <NavLink exact className="oh-subtab" activeClassName="active" to={`${config.root}results`}>Data</NavLink>
+                    <NavLink className="oh-subtab" activeClassName="active" to={`${config.root}about`}>About</NavLink>
+                </div>
+            </Route>
+        )}
 
         <div className={"body-container margin-top-15 padding-hor-5per"}>
             <Switch>
@@ -68,10 +75,10 @@ function App() {
                     <PhotoGallery/>
                 </Route>
                 <Route exact path={`${config.root}results`}
-                    render={(props) => <AllGraphs {...props} graphs={results} summaryGraph={summary}/>}
+                    render={(props) => RESULTS_READY ? <AllGraphs {...props} graphs={results} summaryGraph={summary}/> : <ComingSoon/>}
                 />
                 <Route path={`${config.root}about`}>
-                    <Description/>
+                    {RESULTS_READY ? <Description/> : <ComingSoon/>}
                 </Route>
             </Switch>
         </div>

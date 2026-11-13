@@ -47,8 +47,8 @@ function Landing() {
             to: `${config.root}results`,
             emoji: '🧬',
             title: "Swab 'n Seq Results",
-            desc: 'Explore anonymized sequencing run data, and learn about Swab & Seq.',
-            cta: 'See the results',
+            desc: 'Anonymized sequencing run data and Swab & Seq info — loading soon.',
+            cta: 'Coming soon',
         },
     ];
 
