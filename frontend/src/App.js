@@ -1,9 +1,10 @@
 import React, {useState, useEffect} from 'react';
-import { BrowserRouter as Router, Link, Route, Switch } from "react-router-dom";
+import { BrowserRouter as Router, NavLink, Link, Route, Switch } from "react-router-dom";
 import './App.css';
 import AllGraphs from './components/all-graphs.js';
 import Description from './components/description.js';
 import PhotoGallery from './components/photo-gallery.js';
+import Landing from './components/landing.js';
 import { getAllResults } from "./services/resultsService";
 import config from './config.js';
 
@@ -26,55 +27,58 @@ function App() {
             });
     }, []);
 
+    // "Swab 'n Seq Results" top tab is active on both its sub-routes (Data, About).
+    const resultsActive = (match, location) =>
+        location.pathname.indexOf(`${config.root}results`) === 0 ||
+        location.pathname.indexOf(`${config.root}about`) === 0;
+
     return (
         <div>
         <Router>
         <header className="App-header">
-        <div className={"margin-left-40"}>
-        <Link className={"header-tab"} to={`${config.root}`}>
-<h1 className={'white'}>Data</h1>
-        </Link>
-        <Link className={"header-tab"} to={`${config.root}about`}>
-<h1 className={'white'}>About</h1>
-        </Link>
-        <Link className={"header-tab"} to={`${config.root}gallery`}>
-<h1 className={'white'}>Photo Gallery</h1>
-        </Link>
-        <div className={'logo-container'}>
-        <p className={'logo-text inline-block'}>Integrated Genomics Operation</p>
-    <a href={"https://igo.mskcc.org/"} target={"_blank"}>
-        <img className={'logo inline-block'}
-    src={'https://i.imgur.com/olnUkdu.png'}
-    alt={'igo-logo'}/>
-    </a>
-    </div>
-    </div>
-    </header>
-    <div className={"body-container margin-top-15 padding-hor-5per"}>
-        <Switch>
-        <Route exact path={`${config.root}`}
-    render={(props) =>
-<AllGraphs {...props}
-    graphs={results}
-    summaryGraph={summary}/>
-}
-    />
-        <Route path={`${config.root}about`}
-    render={(props) =>
-<Description/>
-}
-    />
-        <Route path={`${config.root}gallery`}
-    render={(props) =>
-<PhotoGallery/>
-}
-    />
-    </Switch>
-    </div>
-    </Router>
-    <footer></footer>
-    </div>
-);
+            <div className="margin-left-40 oh-nav">
+                <Link className="oh-brand" to={`${config.root}`}>🎃 Open House</Link>
+                <nav className="oh-tabs">
+                    <NavLink className="oh-tab" activeClassName="active" to={`${config.root}gallery`}>Photo Gallery</NavLink>
+                    <NavLink className="oh-tab" activeClassName="active" to={`${config.root}results`} isActive={resultsActive}>Swab 'n Seq Results</NavLink>
+                </nav>
+                <div className="logo-container">
+                    <p className="logo-text inline-block">Integrated Genomics Operation</p>
+                    <a href="https://igo.mskcc.org/" target="_blank" rel="noreferrer">
+                        <img className="logo inline-block" src="https://i.imgur.com/olnUkdu.png" alt="igo-logo"/>
+                    </a>
+                </div>
+            </div>
+        </header>
+
+        {/* Sub-tabs (Data / About) appear only inside Swab 'n Seq Results. */}
+        <Route path={[`${config.root}results`, `${config.root}about`]}>
+            <div className="oh-subnav">
+                <NavLink exact className="oh-subtab" activeClassName="active" to={`${config.root}results`}>Data</NavLink>
+                <NavLink className="oh-subtab" activeClassName="active" to={`${config.root}about`}>About</NavLink>
+            </div>
+        </Route>
+
+        <div className={"body-container margin-top-15 padding-hor-5per"}>
+            <Switch>
+                <Route exact path={`${config.root}`}>
+                    <Landing/>
+                </Route>
+                <Route path={`${config.root}gallery`}>
+                    <PhotoGallery/>
+                </Route>
+                <Route exact path={`${config.root}results`}
+                    render={(props) => <AllGraphs {...props} graphs={results} summaryGraph={summary}/>}
+                />
+                <Route path={`${config.root}about`}>
+                    <Description/>
+                </Route>
+            </Switch>
+        </div>
+        </Router>
+        <footer></footer>
+        </div>
+    );
 }
 
 export default App;
