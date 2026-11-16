@@ -45,7 +45,7 @@ function App() {
                 <Link className="oh-brand" to={`${config.root}`}>🎃 Open House</Link>
                 <nav className="oh-tabs">
                     <NavLink className="oh-tab" activeClassName="active" to={`${config.root}gallery`}>Photo Gallery</NavLink>
-                    <NavLink className="oh-tab" activeClassName="active" to={`${config.root}results`} isActive={resultsActive}>Swab 'n Seq Results</NavLink>
+                    <NavLink className="oh-tab" activeClassName="active" to={`${config.root}results`} isActive={resultsActive}>Swab N Seq</NavLink>
                 </nav>
                 <div className="logo-container">
                     <p className="logo-text inline-block">Integrated Genomics Operation</p>

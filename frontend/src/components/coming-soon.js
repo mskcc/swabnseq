@@ -18,14 +18,12 @@ function ComingSoon() {
                     color: #fff; background: linear-gradient(135deg, #DF4602, #f29934);
                     box-shadow: 0 6px 16px rgba(223,70,2,0.28);
                 }
-                .oh-soon-text { color: #555; font-size: 16px; line-height: 1.6; }
                 @keyframes oh-soon-pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.12); } }
                 @media (prefers-reduced-motion: reduce) { .oh-soon-emoji { animation: none; } }
             `}</style>
             <span className="oh-soon-emoji" aria-hidden="true">🧬</span>
-            <h1 className="oh-soon-title">Swab 'n Seq Results</h1>
+            <h1 className="oh-soon-title">Swab N Seq</h1>
             <div className="oh-soon-badge">Coming Soon</div>
-            <p className="oh-soon-text">Sequencing results are loading soon — check back shortly.<br/>In the meantime, enjoy the Photo Gallery!</p>
         </div>
     );
 }

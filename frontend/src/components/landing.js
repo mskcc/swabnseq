@@ -26,8 +26,7 @@ function CardItem({ c }) {
             <div className="oh-card-body">
                 <div className="oh-card-emoji" aria-hidden="true">{c.emoji}</div>
                 <h2 className="oh-card-title">{c.title}</h2>
-                <p className="oh-card-desc">{c.desc}</p>
-                <span className="oh-card-cta">{c.cta} <span className="arw" aria-hidden="true">→</span></span>
+                {c.desc && <p className="oh-card-desc">{c.desc}</p>}
             </div>
         </Link>
     );
@@ -40,15 +39,12 @@ function Landing() {
             to: `${config.root}gallery`,
             emoji: '📸',
             title: 'Photo Gallery',
-            desc: 'Browse the 2026 Halloween costume contest — every team, in full.',
-            cta: 'View the photos',
+            desc: 'Check out the costume contest entries!',
         },
         {
             to: `${config.root}results`,
             emoji: '🧬',
-            title: "Swab 'n Seq Results",
-            desc: 'Anonymized sequencing run data and Swab & Seq info — loading soon.',
-            cta: 'Coming soon',
+            title: 'Swab N Seq',
         },
     ];
 
@@ -142,9 +138,6 @@ function Landing() {
                 .oh-card:hover .oh-card-emoji { transform: rotate(-8deg) scale(1.06); }
                 .oh-card-title { font-size: 23px; font-weight: 800; margin: 0 0 8px; color: #2a2a2a; }
                 .oh-card-desc { font-size: 15px; line-height: 1.55; color: #555; margin: 0 0 20px; }
-                .oh-card-cta { font-weight: 800; color: #DF4602; display: inline-flex; align-items: center; gap: 8px; font-size: 15px; }
-                .oh-card-cta .arw { transition: transform .25s ease; }
-                .oh-card:hover .oh-card-cta .arw { transform: translateX(6px); }
 
                 @keyframes oh-bob {
                     0%, 100% { transform: translateY(0) rotate(-7deg); }
@@ -170,8 +163,8 @@ function Landing() {
             </div>
 
             <div className="oh-inner">
-                <h1 className="oh-hero-title"><span className="oh-pumpkin" aria-hidden="true">🎃</span> IGO Open House</h1>
-                <p className="oh-hero-sub">Welcome! Pick where you'd like to go.</p>
+                <h1 className="oh-hero-title"><span className="oh-pumpkin" aria-hidden="true">🎃</span> IGO 2026 Spooktacular Open House</h1>
+                <p className="oh-hero-sub">Welcome!</p>
 
                 <div className="oh-cards">
                     {cards.map((c) => <CardItem key={c.title} c={c} />)}
