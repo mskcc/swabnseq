@@ -13,12 +13,18 @@ cors = CORS(app, resources={
     r"/allresults": {"origins": "*"}, 
     r"/getRecord": {"origins": "*"}, 
     r"/download": {"origins": "*"},
-    r"/gallery/*": {"origins": "*"}
+    r"/gallery/*": {"origins": "*"},
+    # Local dev only (frontend on another port); in prod the gallery is same-origin.
+    r"/likes*": {"origins": [r"http://localhost:\d+"], "supports_credentials": True}
 })
 
 # Import data files
 from swab_n_seq_results import data
 from download import data as download
+
+# Photo gallery likes (/likes)
+from likes import bp as likes_bp
+app.register_blueprint(likes_bp)
 
 # Serve home path
 @app.route('/', defaults={'path': ''})

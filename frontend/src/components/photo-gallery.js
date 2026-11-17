@@ -1,4 +1,8 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import config from '../config.js';
+
+// Votes are tied to the IGO Marketplace login; it returns the visitor to /swabnseq afterwards.
+const LOGIN_URL = `${window.location.origin}/login/swabnseq`;
 
 // Local inline-SVG fallback (no external network dependency for broken images).
 const FALLBACK_IMG =
@@ -75,10 +79,57 @@ function PhotoCard({ photo, index, onOpen }) {
     );
 }
 
+function LikeButton({ photo, likes, onToggle, className = '' }) {
+    const liked = likes.mine.has(photo.key);
+    const count = likes.counts[photo.key] || 0;
+    return (
+        <button
+            type="button"
+            className={`pg-like ${liked ? 'liked' : ''} ${className}`}
+            aria-pressed={liked}
+            aria-label={`${liked ? 'Unlike' : 'Like'} ${photo.team || 'this photo'} (${count} ${count === 1 ? 'like' : 'likes'})`}
+            title={likes.signedIn ? '' : 'Sign in to vote'}
+            onClick={(e) => { e.stopPropagation(); onToggle(photo.key); }}
+        >
+            <span className="pg-heart" aria-hidden="true">{liked ? '♥' : '♡'}</span>{count}
+        </button>
+    );
+}
+
 function PhotoGallery() {
     const [photos, setPhotos] = useState([]);
     const [selectedPhoto, setSelectedPhoto] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [likes, setLikes] = useState({ counts: {}, mine: new Set(), signedIn: false });
+
+    useEffect(() => {
+        fetch(`${config.service}likes`, { credentials: 'include' })
+            .then((r) => r.json())
+            .then((d) => setLikes({ counts: d.counts || {}, mine: new Set(d.mine || []), signedIn: !!d.signedIn }))
+            .catch(() => {});   // likes are optional; the gallery still works without them
+    }, []);
+
+    const toggleLike = (key) => {
+        if (!likes.signedIn) {
+            window.location.href = LOGIN_URL;
+            return;
+        }
+        const wasLiked = likes.mine.has(key);
+        const apply = (liked, count) => setLikes((prev) => {
+            const mine = new Set(prev.mine);
+            if (liked) mine.add(key); else mine.delete(key);
+            return { ...prev, mine, counts: { ...prev.counts, [key]: count } };
+        });
+        apply(!wasLiked, (likes.counts[key] || 0) + (wasLiked ? -1 : 1));   // optimistic
+        fetch(`${config.service}likes/${key.split('/').map(encodeURIComponent).join('/')}`, { method: 'POST', credentials: 'include' })
+            .then((r) => {
+                if (r.status === 401) { window.location.href = LOGIN_URL; throw new Error('signed out'); }
+                if (!r.ok) throw new Error(r.status);
+                return r.json();
+            })
+            .then((d) => apply(d.liked, d.count))
+            .catch(() => apply(wasLiked, likes.counts[key] || 0));             // roll back
+    };
 
     const gridRef = useRef(null);
     const modalRef = useRef(null);
@@ -121,6 +172,7 @@ function PhotoGallery() {
             const isVideo = photo.isVideo || ['mp4', 'webm', 'mov'].includes(fileExtension);
             return {
                 id: index + 1,
+                key: photo.filename,    // stable id for likes
                 url: `${base}/gallery/${photo.filename}`,
                 isVideo: isVideo,
                 team: photo.team || ''
@@ -241,8 +293,7 @@ function PhotoGallery() {
             @media (min-width: 900px)  { .pg-grid { column-count: 3; } }
 
             .pg-card {
-                -webkit-column-break-inside: avoid; break-inside: avoid;
-                display: inline-block; width: 100%; margin: 0 0 20px;
+                display: inline-block; width: 100%; margin: 0;
                 padding: 0; border: none; text-align: left; background: #fff;
                 border-radius: 14px; overflow: hidden; cursor: pointer; font: inherit;
                 box-shadow: 0 4px 14px rgba(0,0,0,0.10);
@@ -277,6 +328,26 @@ function PhotoGallery() {
                 padding: 12px 14px; font-size: 14px; font-weight: 700; text-align: center;
                 color: #fff; background: linear-gradient(135deg, #DF4602, #f29934);
             }
+
+            /* Likes: heart pill over each tile's top-right corner */
+            .pg-item { position: relative; -webkit-column-break-inside: avoid; break-inside: avoid; margin: 0 0 20px; }
+            .pg-like {
+                position: absolute; top: 12px; right: 12px; z-index: 3;
+                display: inline-flex; align-items: center; gap: 5px;
+                padding: 5px 11px; border: none; border-radius: 999px;
+                background: rgba(0,0,0,0.5); color: #fff; cursor: pointer;
+                font-family: inherit; font-size: 14px; font-weight: 700; line-height: 1;
+                -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px);
+                opacity: 0; transition: opacity .6s ease, transform .15s ease, background .2s ease;
+            }
+            .pg-card.in ~ .pg-like { opacity: 1; }
+            .pg-like:hover { transform: scale(1.08); background: rgba(0,0,0,0.65); }
+            .pg-like:focus-visible { outline: 2px solid #f29934; outline-offset: 2px; }
+            .pg-heart { font-size: 16px; }
+            .pg-like.liked .pg-heart { color: #ff4d6d; }
+            .pg-like-lg { position: static; opacity: 1; margin-top: 10px; padding: 7px 16px; font-size: 16px; }
+            .pg-signin { text-align: center; color: #6b2d8b; font-weight: 600; margin: -10px 0 6px; }
+            .pg-signin a { color: #DF4602; }
 
             /* Lightbox */
             .pg-backdrop {
@@ -365,9 +436,16 @@ function PhotoGallery() {
                 <span className="pg-subtitle">🎃 IGO 2026 Halloween Costume Contest 🎃</span>
             </div>
 
+            {!likes.signedIn && (
+                <p className="pg-signin">♥ <a href={LOGIN_URL}>Sign in with your MSK account</a> to vote for your favorites</p>
+            )}
+
             <div className="pg-grid" ref={gridRef}>
                 {photos.map((photo, index) => (
-                    <PhotoCard key={photo.id} photo={photo} index={index} onOpen={openModal} />
+                    <div key={photo.id} className="pg-item">
+                        <PhotoCard photo={photo} index={index} onOpen={openModal} />
+                        <LikeButton photo={photo} likes={likes} onToggle={toggleLike} />
+                    </div>
                 ))}
             </div>
 
@@ -400,6 +478,7 @@ function PhotoGallery() {
                         )}
 
                         {selectedPhoto.team && <div className="pg-modal-cap">{selectedPhoto.team}</div>}
+                        <LikeButton photo={selectedPhoto} likes={likes} onToggle={toggleLike} className="pg-like-lg" />
                         <div className="pg-count">{currentIndex + 1} / {photos.length}</div>
                     </div>
                 </div>
