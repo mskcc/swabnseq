@@ -189,6 +189,14 @@ function PhotoGallery() {
     };
 
     const gridRef = useRef(null);
+    // Masonry as flex columns, not CSS `columns`: Safari doesn't paint the 3D-tilt cards in columns 2+ of a multi-column box.
+    const colsFor = () => (window.innerWidth >= 900 ? 3 : window.innerWidth >= 560 ? 2 : 1);
+    const [cols, setCols] = useState(colsFor);
+    useEffect(() => {
+        const onResize = () => setCols(colsFor());
+        window.addEventListener('resize', onResize);
+        return () => window.removeEventListener('resize', onResize);
+    }, []);
     const modalRef = useRef(null);
     const lastFocusedRef = useRef(null);
     const touchRef = useRef(null);
@@ -259,7 +267,7 @@ function PhotoGallery() {
         }, { rootMargin: '0px 0px -8% 0px', threshold: 0.05 });
         cards.forEach((c) => io.observe(c));
         return () => io.disconnect();
-    }, [photos]);
+    }, [photos, cols]);   // cards remount when the column count changes
 
     const openModal = (photo) => {
         lastFocusedRef.current = document.activeElement;
@@ -345,23 +353,25 @@ function PhotoGallery() {
             .pg-subtitle-row { text-align: center; margin-bottom: 26px; }
 
             /* Masonry: true aspect ratios, no cropping. */
-            .pg-grid { column-count: 1; column-gap: 20px; padding: 20px 0; }
-            @media (min-width: 560px)  { .pg-grid { column-count: 2; } }
-            @media (min-width: 900px)  { .pg-grid { column-count: 3; } }
+            .pg-grid { display: flex; gap: 20px; align-items: flex-start; padding: 20px 0; }
+            .pg-col { flex: 1 1 0; min-width: 0; }
 
             .pg-card {
-                display: inline-block; width: 100%; margin: 0;
+                display: block; width: 100%; margin: 0;
                 padding: 0; border: none; text-align: left; background: #fff;
                 border-radius: 14px; overflow: hidden; cursor: pointer; font: inherit;
                 box-shadow: 0 4px 14px rgba(0,0,0,0.10);
-                transform: perspective(900px) rotateX(var(--rx,0)) rotateY(var(--ry,0));
-                transform-style: preserve-3d; will-change: transform;
+                /* Flat at rest: any 3D transform (even rotate 0deg), preserve-3d or will-change puts each card on a
+                   3D layer, and Safari then leaves cards blank. The tilt applies only while hovered (below). */
                 transition: box-shadow .3s ease, transform .12s ease, opacity .6s ease;
                 opacity: 0; translate: 0 26px;  /* reveal start */
             }
             .pg-card.in { opacity: 1; translate: 0 0; transition: opacity .6s ease, translate .6s cubic-bezier(.2,.7,.2,1), box-shadow .3s ease, transform .12s ease; }
             .pg-card { border-top: 3px solid transparent; }
             .pg-card:hover { box-shadow: 0 20px 42px rgba(223,70,2,0.30); border-top-color: #f29934; }
+            @media (hover: hover) and (prefers-reduced-motion: no-preference) {
+                .pg-card:hover { transform: perspective(900px) rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg)); }
+            }
             .pg-card:focus-visible { outline: none; box-shadow: 0 0 0 3px #f29934, 0 20px 42px rgba(223,70,2,0.30); }
 
             .pg-fig { margin: 0; }
@@ -376,8 +386,8 @@ function PhotoGallery() {
             /* Cursor-tracked spotlight glow. */
             .pg-spot {
                 position: absolute; inset: 0; pointer-events: none;
-                background: radial-gradient(260px circle at var(--mx,50%) var(--my,50%), rgba(255,255,255,0.28), rgba(255,255,255,0) 60%);
-                opacity: 0; transition: opacity .25s ease; mix-blend-mode: soft-light;
+                background: radial-gradient(260px circle at var(--mx,50%) var(--my,50%), rgba(255,255,255,0.16), rgba(255,255,255,0) 60%);
+                opacity: 0; transition: opacity .25s ease;  /* no mix-blend-mode: Safari paint bug */
             }
             .pg-card:hover .pg-spot { opacity: 1; }
 
@@ -387,14 +397,13 @@ function PhotoGallery() {
             }
 
             /* Likes: heart pill over each tile's top-right corner */
-            .pg-item { position: relative; -webkit-column-break-inside: avoid; break-inside: avoid; margin: 0 0 20px; }
+            .pg-item { position: relative; margin: 0 0 20px; }
             .pg-like {
                 position: absolute; top: 12px; right: 12px; z-index: 3;
                 display: inline-flex; align-items: center; gap: 5px;
                 padding: 5px 11px; border: none; border-radius: 999px;
-                background: rgba(0,0,0,0.5); color: #fff; cursor: pointer;
+                background: rgba(0,0,0,0.55); color: #fff; cursor: pointer;  /* no backdrop-filter over the grid: Safari paint bug */
                 font-family: inherit; font-size: 14px; font-weight: 700; line-height: 1;
-                -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px);
                 opacity: 0; transition: opacity .6s ease, transform .15s ease, background .2s ease;
             }
             .pg-card.in ~ .pg-like { opacity: 1; }
@@ -528,10 +537,14 @@ function PhotoGallery() {
             </div>
 
             <div className="pg-grid" ref={gridRef}>
-                {photos.map((photo, index) => (
-                    <div key={photo.id} className="pg-item">
-                        <PhotoCard photo={photo} index={index} onOpen={openModal} />
-                        {likesReady && <LikeButton photo={photo} likes={likes} onToggle={toggleLike} />}
+                {Array.from({ length: cols }, (_, c) => (
+                    <div key={c} className="pg-col">
+                        {photos.map((photo, index) => index % cols === c && (
+                            <div key={photo.id} className="pg-item">
+                                <PhotoCard photo={photo} index={index} onOpen={openModal} />
+                                {likesReady && <LikeButton photo={photo} likes={likes} onToggle={toggleLike} />}
+                            </div>
+                        ))}
                     </div>
                 ))}
             </div>
