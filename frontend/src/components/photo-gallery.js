@@ -1,8 +1,22 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import config from '../config.js';
 
-// Votes are tied to the IGO Marketplace login; it returns the visitor to /swabnseq afterwards.
-const LOGIN_URL = `${window.location.origin}/login/swabnseq`;
+// No sign-in: each browser gets a random voter id (one like per photo per browser).
+const VOTER_KEY = 'swabnseq_voter_id';
+const voterId = (() => {
+    const fresh = () => (window.crypto && window.crypto.randomUUID ? window.crypto.randomUUID()
+        : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}-${Math.random().toString(36).slice(2)}`);
+    try {
+        let id = localStorage.getItem(VOTER_KEY);
+        if (!id) { id = fresh(); localStorage.setItem(VOTER_KEY, id); }
+        return id;
+    } catch (e) {
+        return fresh();   // storage blocked: likes still work for this visit
+    }
+})();
+const VOTER_HEADERS = { 'X-Voter-Id': voterId };
+// ~1000 visitors x 1 read / 5 s = ~200 small reads/s; the backend handled ~2000 reads/s in a local test.
+const LIKES_POLL_MS = 5000;
 
 // Local inline-SVG fallback (no external network dependency for broken images).
 const FALLBACK_IMG =
@@ -82,16 +96,26 @@ function PhotoCard({ photo, index, onOpen }) {
 function LikeButton({ photo, likes, onToggle, className = '' }) {
     const liked = likes.mine.has(photo.key);
     const count = likes.counts[photo.key] || 0;
+    const [burst, setBurst] = useState(0);   // bumps on each like click to replay the pop + sparks
     return (
         <button
             type="button"
             className={`pg-like ${liked ? 'liked' : ''} ${className}`}
             aria-pressed={liked}
             aria-label={`${liked ? 'Unlike' : 'Like'} ${photo.team || 'this photo'} (${count} ${count === 1 ? 'like' : 'likes'})`}
-            title={likes.signedIn ? '' : 'Sign in to vote'}
-            onClick={(e) => { e.stopPropagation(); onToggle(photo.key); }}
+            onClick={(e) => {
+                e.stopPropagation();
+                if (!liked) setBurst((b) => b + 1);
+                onToggle(photo.key);
+            }}
         >
-            <span className="pg-heart" aria-hidden="true">{liked ? '♥' : '♡'}</span>{count}
+            <span key={`h${burst}`} className={`pg-heart ${burst ? 'pop' : ''}`} aria-hidden="true">{liked ? '♥' : '♡'}</span>
+            {liked && burst > 0 && (
+                <span key={`b${burst}`} className="pg-burst" aria-hidden="true">
+                    {[0, 1, 2, 3, 4, 5, 6, 7].map((i) => <i key={i} style={{ '--a': `${i * 45}deg` }} />)}
+                </span>
+            )}
+            <span key={`c${count}`} className="pg-count-num">{count}</span>
         </button>
     );
 }
@@ -100,20 +124,53 @@ function PhotoGallery() {
     const [photos, setPhotos] = useState([]);
     const [selectedPhoto, setSelectedPhoto] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [likes, setLikes] = useState({ counts: {}, mine: new Set(), signedIn: false });
+    const [likes, setLikes] = useState({ counts: {}, mine: new Set() });
+    const [likesReady, setLikesReady] = useState(false);   // hide hearts if the likes API is unavailable
+    const pendingRef = useRef(new Set());                    // photos with a like request in flight
+    const [bigHeart, setBigHeart] = useState(0);   // replays the double-click heart in the lightbox
+    useEffect(() => { setBigHeart(0); }, [selectedPhoto]);   // don't replay it when a photo opens
 
+    // Double-click the enlarged photo to like it (never unlikes), with a big heart.
+    const likeByDoubleClick = (key) => {
+        if (!likesReady) return;
+        setBigHeart((n) => n + 1);
+        if (!likes.mine.has(key)) toggleLike(key);
+    };
+
+    // Live counts: reload every LIKES_POLL_MS while the tab is visible, and right away when it comes back.
+    const likeSeqRef = useRef(0);   // bumps when a click finishes; a poll started before that is stale
     useEffect(() => {
-        fetch(`${config.service}likes`, { credentials: 'include' })
-            .then((r) => r.json())
-            .then((d) => setLikes({ counts: d.counts || {}, mine: new Set(d.mine || []), signedIn: !!d.signedIn }))
-            .catch(() => {});   // likes are optional; the gallery still works without them
+        let stopped = false;
+        const load = () => {
+            if (document.hidden) return;
+            const seq = likeSeqRef.current;
+            fetch(`${config.service}likes`, { headers: VOTER_HEADERS })
+                .then((r) => { if (!r.ok) throw new Error(r.status); return r.json(); })
+                .then((d) => {
+                    if (!d || typeof d.counts !== 'object') throw new Error('bad response');
+                    if (stopped || seq !== likeSeqRef.current) return;
+                    setLikes((prev) => {
+                        const mine = new Set(d.mine || []);
+                        const counts = { ...d.counts };
+                        pendingRef.current.forEach((k) => {   // keep the optimistic state of clicks still saving
+                            counts[k] = prev.counts[k] || 0;
+                            if (prev.mine.has(k)) mine.add(k); else mine.delete(k);
+                        });
+                        return { counts, mine };
+                    });
+                    setLikesReady(true);
+                })
+                .catch(() => {});   // likes are optional; keep the last counts and try again next tick
+        };
+        load();
+        const timer = setInterval(load, LIKES_POLL_MS);
+        document.addEventListener('visibilitychange', load);
+        return () => { stopped = true; clearInterval(timer); document.removeEventListener('visibilitychange', load); };
     }, []);
 
     const toggleLike = (key) => {
-        if (!likes.signedIn) {
-            window.location.href = LOGIN_URL;
-            return;
-        }
+        if (pendingRef.current.has(key)) return;   // one request per photo at a time (avoids out-of-order results)
+        pendingRef.current.add(key);
         const wasLiked = likes.mine.has(key);
         const apply = (liked, count) => setLikes((prev) => {
             const mine = new Set(prev.mine);
@@ -121,14 +178,14 @@ function PhotoGallery() {
             return { ...prev, mine, counts: { ...prev.counts, [key]: count } };
         });
         apply(!wasLiked, (likes.counts[key] || 0) + (wasLiked ? -1 : 1));   // optimistic
-        fetch(`${config.service}likes/${key.split('/').map(encodeURIComponent).join('/')}`, { method: 'POST', credentials: 'include' })
+        fetch(`${config.service}likes/${key.split('/').map(encodeURIComponent).join('/')}`, { method: 'POST', headers: VOTER_HEADERS })
             .then((r) => {
-                if (r.status === 401) { window.location.href = LOGIN_URL; throw new Error('signed out'); }
                 if (!r.ok) throw new Error(r.status);
                 return r.json();
             })
             .then((d) => apply(d.liked, d.count))
-            .catch(() => apply(wasLiked, likes.counts[key] || 0));             // roll back
+            .catch(() => apply(wasLiked, likes.counts[key] || 0))              // roll back
+            .finally(() => { pendingRef.current.delete(key); likeSeqRef.current += 1; });
     };
 
     const gridRef = useRef(null);
@@ -345,9 +402,43 @@ function PhotoGallery() {
             .pg-like:focus-visible { outline: 2px solid #f29934; outline-offset: 2px; }
             .pg-heart { font-size: 16px; }
             .pg-like.liked .pg-heart { color: #ff4d6d; }
-            .pg-like-lg { position: static; opacity: 1; margin-top: 10px; padding: 7px 16px; font-size: 16px; }
-            .pg-signin { text-align: center; color: #6b2d8b; font-weight: 600; margin: -10px 0 6px; }
-            .pg-signin a { color: #DF4602; }
+            .pg-like-lg { position: relative; top: auto; right: auto; opacity: 1; margin-top: 10px; padding: 7px 16px; font-size: 16px; }
+
+            /* Like effects */
+            .pg-heart { display: inline-block; }
+            .pg-heart.pop { animation: pg-pop .5s cubic-bezier(.2,.8,.3,1.3); }
+            .pg-burst { position: absolute; left: 19px; top: 50%; width: 0; height: 0; pointer-events: none; }
+            .pg-like-lg .pg-burst { left: 24px; }
+            .pg-burst i {
+                position: absolute; left: -3px; top: -3px; width: 6px; height: 6px; border-radius: 50%;
+                background: #ff4d6d; transform: rotate(var(--a)) translateY(0) scale(1);
+                animation: pg-spark .65s ease-out forwards;
+            }
+            .pg-burst i:nth-child(even) { background: #f29934; }
+            .pg-count-num { display: inline-block; animation: pg-count .3s ease; }
+            .pg-bigheart {
+                position: absolute; left: 50%; top: 38%; z-index: 4; pointer-events: none;
+                font-size: 110px; line-height: 1; color: #ff4d6d;
+                text-shadow: 0 6px 24px rgba(0,0,0,0.35);
+                transform: translate(-50%, -50%) scale(0); opacity: 0;
+                animation: pg-big .9s ease-out forwards;
+            }
+            @keyframes pg-pop { 0% { transform: scale(1); } 30% { transform: scale(1.55); } 55% { transform: scale(.85); } 100% { transform: scale(1); } }
+            @keyframes pg-spark { to { transform: rotate(var(--a)) translateY(-24px) scale(.3); opacity: 0; } }
+            @keyframes pg-count { from { transform: translateY(-6px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+            @keyframes pg-big {
+                0%   { transform: translate(-50%, -50%) scale(0);   opacity: 0; }
+                15%  { transform: translate(-50%, -50%) scale(1.2); opacity: .95; }
+                30%  { transform: translate(-50%, -50%) scale(.95); }
+                45%  { transform: translate(-50%, -50%) scale(1); }
+                80%  { opacity: .95; }
+                100% { transform: translate(-50%, -50%) scale(1.1); opacity: 0; }
+            }
+            @media (prefers-reduced-motion: reduce) {
+                .pg-heart.pop, .pg-burst i, .pg-count-num { animation: none; }
+                .pg-burst { display: none; }
+                .pg-bigheart { animation: none; opacity: 0; }
+            }
 
             /* Lightbox */
             .pg-backdrop {
@@ -436,15 +527,11 @@ function PhotoGallery() {
                 <span className="pg-subtitle">🎃 IGO 2026 Halloween Costume Contest 🎃</span>
             </div>
 
-            {!likes.signedIn && (
-                <p className="pg-signin">♥ <a href={LOGIN_URL}>Sign in with your MSK account</a> to vote for your favorites</p>
-            )}
-
             <div className="pg-grid" ref={gridRef}>
                 {photos.map((photo, index) => (
                     <div key={photo.id} className="pg-item">
                         <PhotoCard photo={photo} index={index} onOpen={openModal} />
-                        <LikeButton photo={photo} likes={likes} onToggle={toggleLike} />
+                        {likesReady && <LikeButton photo={photo} likes={likes} onToggle={toggleLike} />}
                     </div>
                 ))}
             </div>
@@ -471,14 +558,16 @@ function PhotoGallery() {
                             <img
                                 key={selectedPhoto.id}
                                 className="pg-media pg-kb"
+                                onDoubleClick={() => likeByDoubleClick(selectedPhoto.key)}
                                 src={selectedPhoto.url}
                                 alt={selectedPhoto.team || 'IGO costume contest entry'}
                                 onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = FALLBACK_IMG; }}
                             />
                         )}
 
+                        {bigHeart > 0 && <span key={bigHeart} className="pg-bigheart" aria-hidden="true">♥</span>}
                         {selectedPhoto.team && <div className="pg-modal-cap">{selectedPhoto.team}</div>}
-                        <LikeButton photo={selectedPhoto} likes={likes} onToggle={toggleLike} className="pg-like-lg" />
+                        {likesReady && <LikeButton photo={selectedPhoto} likes={likes} onToggle={toggleLike} className="pg-like-lg" />}
                         <div className="pg-count">{currentIndex + 1} / {photos.length}</div>
                     </div>
                 </div>

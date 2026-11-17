@@ -15,7 +15,7 @@ cors = CORS(app, resources={
     r"/download": {"origins": "*"},
     r"/gallery/*": {"origins": "*"},
     # Local dev only (frontend on another port); in prod the gallery is same-origin.
-    r"/likes*": {"origins": [r"http://localhost:\d+"], "supports_credentials": True}
+    r"/likes*": {"origins": [r"http://localhost:\d+"]}
 })
 
 # Import data files
