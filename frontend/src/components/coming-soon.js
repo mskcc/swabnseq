@@ -22,7 +22,7 @@ function ComingSoon() {
                 @media (prefers-reduced-motion: reduce) { .oh-soon-emoji { animation: none; } }
             `}</style>
             <span className="oh-soon-emoji" aria-hidden="true">🧬</span>
-            <h1 className="oh-soon-title">Swab N Seq</h1>
+            <h1 className="oh-soon-title">Swab N Seq Data Analyses</h1>
             <div className="oh-soon-badge">Coming Soon</div>
         </div>
     );

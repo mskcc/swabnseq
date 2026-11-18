@@ -45,6 +45,7 @@ function Landing() {
             to: `${config.root}results`,
             emoji: '🧬',
             title: 'Swab N Seq',
+            desc: 'Find out what microorganisms are lurking on your device!',
         },
     ];
 
@@ -96,7 +97,8 @@ function Landing() {
                     animation: oh-bob 1.9s ease-in-out infinite;
                     color: #000; -webkit-text-fill-color: currentColor;
                 }
-                .oh-hero-sub { color: #6b2d8b; font-weight: 600; margin: 0 0 42px; font-size: 17px; }
+                .oh-nowrap { white-space: nowrap; }   /* if the title wraps, "Open House" moves down together */
+                .oh-hero-sub { color: #6b2d8b; font-weight: 700; margin: 0 0 42px; font-size: clamp(24px, 3.2vw, 34px); }
 
                 .oh-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); gap: 26px; }
                 .oh-card {
@@ -163,7 +165,7 @@ function Landing() {
             </div>
 
             <div className="oh-inner">
-                <h1 className="oh-hero-title"><span className="oh-pumpkin" aria-hidden="true">🎃</span> IGO 2026 Spooktacular Open House</h1>
+                <h1 className="oh-hero-title"><span className="oh-pumpkin" aria-hidden="true">🎃</span> IGO 2026 Spooktacular <span className="oh-nowrap">Open House</span></h1>
                 <p className="oh-hero-sub">Welcome!</p>
 
                 <div className="oh-cards">

@@ -209,7 +209,7 @@ function PhotoGallery() {
         const photoList = [
             { filename: '2026_Costume_Contest/EXPAND.jpg', team: 'Superheroes' },
             { filename: '2026_Costume_Contest/Glickman Lab.jpg', team: "We're being silly" },
-            { filename: "2026_Costume_Contest/Dremus lab.jpeg", team: 'The sights and sounds of the Safari: Dirk and Sahil, the experienced explorers, met up with Charanya the globetrotter to explore the concrete jungle. During their adventure they stumble across Lucia the tiger, Eleanor the elephant and Liza the frog.' },
+            { filename: "2026_Costume_Contest/Dremus lab.jpeg", team: 'The Sights and Sounds of the Safari' },
             { filename: '2026_Costume_Contest/Siglecs in the city and the Niec niche.jpeg', team: 'Siglecs in the City and the Niec Niche' },
             { filename: '2026_Costume_Contest/Olivia Barr.jpeg', team: 'Greg from over the garden wall (teapot)' },
             { filename: '2026_Costume_Contest/If you give a cat a mouse.jpeg', team: 'If You Give a Cat a Mouse' },
@@ -339,18 +339,14 @@ function PhotoGallery() {
                     radial-gradient(900px 300px at 50% -40px, rgba(242,153,52,0.18), rgba(242,153,52,0) 70%),
                     linear-gradient(180deg, #fff8f2 0%, #faf6ff 100%);
             }
-            .pg-title {
-                background: linear-gradient(90deg, #DF4602, #f29934 60%, #8a3ffb);
-                -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent;
-            }
             .pg-subtitle {
                 text-align: center; margin: 6px auto 8px; display: inline-block;
-                color: #fff; font-weight: 700; letter-spacing: .02em;
-                padding: 7px 18px; border-radius: 999px;
+                color: #fff; font-weight: 700; letter-spacing: .02em; font-size: clamp(17px, 2.4vw, 22px); line-height: 1.3;
+                padding: 9px 22px; border-radius: 999px;
                 background: linear-gradient(135deg, #DF4602, #f29934);
                 box-shadow: 0 6px 16px rgba(223,70,2,0.28);
             }
-            .pg-subtitle-row { text-align: center; margin-bottom: 26px; }
+            .pg-subtitle-row { text-align: center; margin: 0 0 26px; }
 
             /* Masonry: true aspect ratios, no cropping. */
             .pg-grid { display: flex; gap: 20px; align-items: flex-start; padding: 20px 0; }
@@ -511,7 +507,6 @@ function PhotoGallery() {
         return (
             <div>
                 {styles}
-                <h1 className={'text-align-center'}>Photo Gallery</h1>
                 <div className={'padding-top-20'}><p style={{ textAlign: 'center' }}>Loading photos...</p></div>
             </div>
         );
@@ -520,7 +515,6 @@ function PhotoGallery() {
     if (photos.length === 0) {
         return (
             <div>
-                <h1 className={'text-align-center'}>Photo Gallery</h1>
                 <div className={'padding-top-20'}><p style={{ textAlign: 'center' }}>No photos available</p></div>
             </div>
         );
@@ -531,10 +525,9 @@ function PhotoGallery() {
     return (
         <div className="pg-wrap">
             {styles}
-            <h1 className={'text-align-center pg-title'}>Photo Gallery</h1>
-            <div className={'padding-top-20 pg-subtitle-row'}>
-                <span className="pg-subtitle">🎃 IGO 2026 Halloween Costume Contest 🎃</span>
-            </div>
+            <h1 className={'padding-top-20 pg-subtitle-row'}>
+                <span className="pg-subtitle">🎃 Halloween Costume Contest sponsored by OSRM 🎃</span>
+            </h1>
 
             <div className="pg-grid" ref={gridRef}>
                 {Array.from({ length: cols }, (_, c) => (
